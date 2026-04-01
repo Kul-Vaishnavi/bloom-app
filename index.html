@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bloom">
+<title>bloom ✿</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --pink: #F7C5D8; --pink-dark: #E87DAA;
+  --mint: #B8EDD9; --mint-dark: #4DBFA0;
+  --peach: #FDDCB5; --peach-dark: #F0A458;
+  --lavender: #D4CAEF; --lavender-dark: #8B78D0;
+  --sky: #C3E4F7; --sky-dark: #5DB0E0;
+  --bg: #FFF8F5; --card: #FFFFFF;
+  --text: #3D2C35; --muted: #9B8A93;
+  --border: rgba(200,160,180,0.25);
+  --shadow: 0 4px 24px rgba(232,125,170,0.10);
+}
+html, body { font-family: 'Quicksand', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overscroll-behavior: none; }
+.app { max-width: 400px; margin: 0 auto; padding: 16px 14px 90px; }
+
+/* HEADER */
+.header { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 14px; }
+.header h1 { font-family: 'Nunito', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; }
+.header h1 span { color: var(--pink-dark); }
+.streak-pill { display: flex; align-items: center; gap: 4px; background: var(--peach); color: #8B5A1A; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 20px; }
+
+/* SYNC STATUS */
+.sync-bar { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 10px; min-height: 18px; }
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background 0.3s; }
+.sync-dot.syncing { background: var(--peach-dark); animation: blink 0.8s infinite; }
+.sync-dot.ok { background: var(--mint-dark); }
+.sync-dot.err { background: #E87D7D; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* PROGRESS */
+.progress-wrap { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 11px 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.progress-top { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+.bar-bg { background: #F0EAF0; border-radius: 10px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--pink-dark), var(--lavender-dark)); border-radius: 10px; transition: width 0.6s cubic-bezier(.34,1.56,.64,1); }
+
+/* NUDGE */
+.nudge { background: var(--mint); border: 1.5px solid var(--mint-dark); border-radius: 14px; padding: 11px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.nudge-icon { font-size: 17px; flex-shrink: 0; }
+.nudge-text { font-size: 12px; font-weight: 700; color: #1A6A4A; flex: 1; }
+.nudge-btn { background: var(--mint-dark); color: white; border: none; border-radius: 9px; padding: 5px 11px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Quicksand', sans-serif; white-space: nowrap; }
+
+/* MOOD */
+.mood-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.mood-row::-webkit-scrollbar { display: none; }
+.mood-pill { white-space: nowrap; background: var(--card); border: 1.5px solid var(--border); border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.2s; font-family: 'Quicksand', sans-serif; flex-shrink: 0; }
+.mood-pill.active { background: var(--pink); border-color: var(--pink-dark); color: #7A2A55; }
+
+/* TAGS */
+.tags-row { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
+.tags-row::-webkit-scrollbar { display: none; }
+.tag { white-space: nowrap; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 5px 11px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.18s; font-family: 'Quicksand', sans-serif; flex-shrink: 0; }
+.tag.sel-email    { background: var(--pink);     border-color: var(--pink-dark);     color: #7A2A4A; }
+.tag.sel-reply    { background: var(--sky);      border-color: var(--sky-dark);      color: #1A5A82; }
+.tag.sel-post     { background: var(--lavender); border-color: var(--lavender-dark); color: #4A327A; }
+.tag.sel-errand   { background: var(--peach);    border-color: var(--peach-dark);    color: #7A4210; }
+.tag.sel-reminder { background: var(--mint);     border-color: var(--mint-dark);     color: #1A6A4A; }
+
+/* ADD ROW */
+.add-row { display: flex; gap: 7px; margin-bottom: 4px; align-items: center; }
+.add-row input { flex: 1; background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 10px 14px; font-family: 'Quicksand', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); outline: none; transition: border-color 0.2s; box-shadow: var(--shadow); }
+.add-row input:focus { border-color: var(--pink-dark); }
+.add-row input::placeholder { color: var(--muted); font-weight: 500; }
+.icon-btn { width: 42px; height: 42px; border-radius: 13px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; flex-shrink: 0; }
+.icon-btn:active { transform: scale(0.92); }
+.mic-btn { background: var(--lavender); color: var(--lavender-dark); font-size: 18px; }
+.mic-btn.listening { background: var(--lavender-dark); animation: pulse-mic 1s infinite; }
+@keyframes pulse-mic { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+.add-btn { background: var(--pink-dark); color: white; font-size: 22px; font-weight: 900; font-family: 'Nunito', sans-serif; }
+
+/* VOICE STATUS */
+.voice-status { font-size: 12px; font-weight: 600; color: var(--lavender-dark); margin: 4px 0 10px 2px; min-height: 18px; }
+
+/* SECTION LABEL */
+.sec-label { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; padding-left: 2px; }
+
+/* TASK CARDS */
+.tasks { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+.task-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 11px 12px; display: flex; align-items: center; gap: 10px; transition: all 0.25s; animation: popIn 0.3s cubic-bezier(.34,1.56,.64,1); position: relative; overflow: hidden; box-shadow: var(--shadow); }
+@keyframes popIn { from{opacity:0;transform:scale(0.88) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.task-card.done { opacity: 0.45; }
+.task-card.done .task-text { text-decoration: line-through; color: var(--muted); }
+.check-circle { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
+.task-card.done .check-circle { background: var(--mint-dark); border-color: var(--mint-dark); }
+.checkmark { display: none; color: white; font-size: 13px; font-weight: 800; }
+.task-card.done .checkmark { display: block; }
+.task-body { flex: 1; min-width: 0; }
+.task-text { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+.cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 7px; }
+.badge-email    { background: var(--pink);     color: #7A2A4A; }
+.badge-reply    { background: var(--sky);      color: #1A5A82; }
+.badge-post     { background: var(--lavender); color: #4A327A; }
+.badge-errand   { background: var(--peach);    color: #7A4210; }
+.badge-reminder { background: var(--mint);     color: #1A6A4A; }
+.badge-other    { background: #F0EAF0;         color: #7A6A72; }
+.del-btn { background: none; border: none; color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px 6px; border-radius: 8px; opacity: 0; transition: opacity 0.2s; font-family: 'Quicksand', sans-serif; }
+.task-card:hover .del-btn { opacity: 1; }
+
+/* touch devices always show del */
+@media (hover: none) { .del-btn { opacity: 0.4; } }
+
+/* CONFETTI */
+.confetti-burst { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; }
+.c-dot { position: absolute; width: 7px; height: 7px; border-radius: 50%; animation: burst 0.55s ease-out forwards; opacity: 0; }
+@keyframes burst { 0%{opacity:1;transform:translate(0,0) scale(1)} 100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0.2)} }
+
+/* EMPTY */
+.empty { text-align: center; padding: 24px 0; color: var(--muted); }
+.empty .big { font-size: 34px; margin-bottom: 6px; }
+.empty p { font-size: 13px; font-weight: 600; }
+
+/* DONE TOGGLE */
+.done-toggle { background: none; border: none; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px 2px; font-family: 'Quicksand', sans-serif; }
+
+/* LOADING OVERLAY */
+.loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 100; transition: opacity 0.4s; }
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.loading-flower { font-size: 40px; animation: spin-bloom 1.2s infinite; }
+@keyframes spin-bloom { 0%,100%{transform:scale(1) rotate(0deg)} 50%{transform:scale(1.15) rotate(180deg)} }
+.loading-text { font-size: 13px; font-weight: 700; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-flower">🌸</div>
+  <div class="loading-text">loading your tasks...</div>
+</div>
+
+<div class="app">
+  <div class="header">
+    <h1>bloom <span>✿</span></h1>
+    <div class="streak-pill">🔥 <span id="streak-num">0</span> day streak</div>
+  </div>
+
+  <div class="sync-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">connecting...</span>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top"><span>today's bloom</span><span id="pct-lbl">0%</span></div>
+    <div class="bar-bg"><div class="bar-fill" id="prog-bar" style="width:0%"></div></div>
+  </div>
+
+  <div class="nudge">
+    <span class="nudge-icon" id="nudge-icon">🌸</span>
+    <span class="nudge-text" id="nudge-text">Pick the smallest task and just start.</span>
+    <button class="nudge-btn" onclick="nextNudge()">next tip ✨</button>
+  </div>
+
+  <div class="mood-row">
+    <button class="mood-pill active" onclick="setMood(this)">🌸 chill</button>
+    <button class="mood-pill" onclick="setMood(this)">⚡ focused</button>
+    <button class="mood-pill" onclick="setMood(this)">😅 ugh</button>
+    <button class="mood-pill" onclick="setMood(this)">🎧 flow</button>
+    <button class="mood-pill" onclick="setMood(this)">😴 tired</button>
+  </div>
+
+  <div class="tags-row">
+    <button class="tag" data-cat="email"    onclick="selectCat(this)">📧 email</button>
+    <button class="tag" data-cat="reply"    onclick="selectCat(this)">💬 reply</button>
+    <button class="tag" data-cat="post"     onclick="selectCat(this)">📸 post</button>
+    <button class="tag" data-cat="errand"   onclick="selectCat(this)">🛍 errand</button>
+    <button class="tag" data-cat="reminder" onclick="selectCat(this)">🔔 reminder</button>
+  </div>
+
+  <div class="add-row">
+    <input type="text" id="task-input" placeholder="add a lil task..." maxlength="80" />
+    <button class="icon-btn mic-btn" id="mic-btn" onclick="toggleVoice()" title="Voice input">🎤</button>
+    <button class="icon-btn add-btn" onclick="addTask()">+</button>
+  </div>
+  <div class="voice-status" id="voice-status"></div>
+
+  <div class="sec-label">up next</div>
+  <div class="tasks" id="active-tasks"></div>
+
+  <button class="done-toggle" onclick="toggleDone()" id="done-toggle-btn">▸ show done (0)</button>
+  <div class="tasks" id="done-tasks" style="display:none; margin-top:8px;"></div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwms_1WxAIKmJ17vohlZNbq4bV7iLN7OKxiL8NNRNq1ZdagVpaZhbIuPUaYFuVkvLMcdw/exec';
+
+let tasks = [];
+let nextId = Date.now();
+let selectedCat = null;
+let showDone = false;
+let recognition = null;
+let isListening = false;
+let streak = parseInt(localStorage.getItem('bloom_streak') || '0');
+let lastDate = localStorage.getItem('bloom_last_date') || '';
+
+const nudges = [
+  { icon: '🌸', text: 'Pick the smallest task and just start.' },
+  { icon: '💌', text: 'Got a reply waiting? 2 mins, you got this.' },
+  { icon: '☕', text: 'One sip, one task. That\'s the vibe.' },
+  { icon: '⚡', text: 'Knock out the one you\'ve been avoiding.' },
+  { icon: '✨', text: 'Done 3? You deserve a little treat.' },
+  { icon: '🎯', text: 'Focus on just ONE thing right now.' },
+  { icon: '🌿', text: 'Breathe. Then just pick something small.' },
+];
+let nudgeIdx = 0;
+
+// ── SYNC STATUS ──────────────────────────────────────────────────────────
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+// ── STREAK ───────────────────────────────────────────────────────────────
+function updateStreak() {
+  const today = new Date().toDateString();
+  if (lastDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    streak = (lastDate === yesterday) ? streak + 1 : 1;
+    lastDate = today;
+    localStorage.setItem('bloom_streak', streak);
+    localStorage.setItem('bloom_last_date', today);
+  }
+  document.getElementById('streak-num').textContent = streak;
+}
+
+// ── FETCH TASKS ───────────────────────────────────────────────────────────
+async function fetchTasks() {
+  setSyncStatus('syncing', 'loading tasks...');
+  try {
+    const res = await fetch(API + '?t=' + Date.now());
+    const data = await res.json();
+    tasks = (data.tasks || []).map(t => ({
+      ...t,
+      done: t.done === true || t.done === 'TRUE' || t.done === 'true'
+    }));
+    // sort newest first
+    tasks.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    setSyncStatus('ok', 'synced ✓');
+    render();
+  } catch (e) {
+    setSyncStatus('err', 'offline — check connection');
+    // fallback to local cache
+    tasks = JSON.parse(localStorage.getItem('bloom_cache') || '[]');
+    render();
+  } finally {
+    document.getElementById('loading-overlay').classList.add('hidden');
+  }
+}
+
+// ── SAVE TASK TO SHEET ────────────────────────────────────────────────────
+async function saveTask(task) {
+  setSyncStatus('syncing', 'saving...');
+  try {
+    await fetch(API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'save', task }),
+    });
+    setSyncStatus('ok', 'synced ✓');
+    localStorage.setItem('bloom_cache', JSON.stringify(tasks));
+  } catch (e) {
+    setSyncStatus('err', 'save failed — try again');
+  }
+}
+
+// ── DELETE TASK FROM SHEET ────────────────────────────────────────────────
+async function deleteFromSheet(id) {
+  setSyncStatus('syncing', 'deleting...');
+  try {
+    await fetch(API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'delete', id }),
+    });
+    setSyncStatus('ok', 'synced ✓');
+    localStorage.setItem('bloom_cache', JSON.stringify(tasks));
+  } catch (e) {
+    setSyncStatus('err', 'delete failed — try again');
+  }
+}
+
+// ── ADD TASK ──────────────────────────────────────────────────────────────
+async function addTask(text) {
+  const input = document.getElementById('task-input');
+  const t = (text || input.value).trim();
+  if (!t) { input.focus(); return; }
+  const task = { id: nextId++, text: t, cat: selectedCat || 'other', done: false, ts: Date.now() };
+  tasks.unshift(task);
+  input.value = '';
+  selectedCat = null;
+  document.querySelectorAll('.tag').forEach(el => el.className = 'tag');
+  render();
+  input.focus();
+  await saveTask(task);
+}
+
+document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+// ── TOGGLE DONE ───────────────────────────────────────────────────────────
+async function toggleTask(id) {
+  const t = tasks.find(t => t.id == id);
+  if (!t) return;
+  t.done = !t.done;
+  if (t.done) confetti(id);
+  render();
+  await saveTask(t);
+}
+
+// ── DELETE ─────────────────────────────────────────────────────────────────
+async function deleteTask(id) {
+  tasks = tasks.filter(t => t.id != id);
+  render();
+  await deleteFromSheet(id);
+}
+
+// ── CAT / MOOD ────────────────────────────────────────────────────────────
+function selectCat(el) {
+  const cat = el.dataset.cat;
+  if (selectedCat === cat) { selectedCat = null; el.className = 'tag'; return; }
+  document.querySelectorAll('.tag').forEach(e => e.className = 'tag');
+  selectedCat = cat;
+  el.className = `tag sel-${cat}`;
+}
+function setMood(el) {
+  document.querySelectorAll('.mood-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── NUDGE ─────────────────────────────────────────────────────────────────
+function nextNudge() {
+  nudgeIdx = (nudgeIdx + 1) % nudges.length;
+  document.getElementById('nudge-icon').textContent = nudges[nudgeIdx].icon;
+  document.getElementById('nudge-text').textContent = nudges[nudgeIdx].text;
+}
+
+// ── CONFETTI ───────────────────────────────────────────────────────────────
+function confetti(id) {
+  const card = document.querySelector(`[data-id="${id}"]`);
+  if (!card) return;
+  const burst = card.querySelector('.confetti-burst');
+  const cols = ['#F7C5D8','#B8EDD9','#FDDCB5','#D4CAEF','#C3E4F7','#E87DAA'];
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('div');
+    d.className = 'c-dot';
+    const a = (i / 10) * 360;
+    const dist = 28 + Math.random() * 22;
+    d.style.cssText = `background:${cols[i%cols.length]};left:50%;top:50%;--dx:${Math.cos(a*Math.PI/180)*dist}px;--dy:${Math.sin(a*Math.PI/180)*dist}px;`;
+    burst.appendChild(d);
+    setTimeout(() => d.remove(), 600);
+  }
+}
+
+// ── VOICE ──────────────────────────────────────────────────────────────────
+function toggleVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { setVoiceStatus('😢 voice not supported here'); setTimeout(() => setVoiceStatus(''), 3000); return; }
+  if (isListening) { recognition && recognition.stop(); return; }
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('mic-btn').classList.add('listening');
+    setVoiceStatus('🎤 listening...');
+    document.getElementById('task-input').placeholder = 'say your task...';
+  };
+  recognition.onresult = e => {
+    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+    document.getElementById('task-input').value = transcript;
+    setVoiceStatus(e.results[e.results.length-1].isFinal ? '✓ got it! tap + to add' : '🎤 listening...');
+  };
+  recognition.onerror = e => {
+    setVoiceStatus(e.error === 'not-allowed' ? '🔒 mic blocked — check browser' : '😕 try again');
+    setTimeout(() => setVoiceStatus(''), 3000);
+    stopVoice();
+  };
+  recognition.onend = stopVoice;
+  recognition.start();
+}
+function stopVoice() {
+  isListening = false;
+  document.getElementById('mic-btn').classList.remove('listening');
+  document.getElementById('task-input').placeholder = 'add a lil task...';
+  setTimeout(() => setVoiceStatus(''), 3000);
+}
+function setVoiceStatus(msg) { document.getElementById('voice-status').textContent = msg; }
+
+// ── DONE TOGGLE ────────────────────────────────────────────────────────────
+function toggleDone() {
+  showDone = !showDone;
+  document.getElementById('done-tasks').style.display = showDone ? 'flex' : 'none';
+  render();
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function catLabel(cat) {
+  return { email:'📧 email', reply:'💬 reply', post:'📸 post', errand:'🛍 errand', reminder:'🔔 reminder', other:'• other' }[cat] || cat;
+}
+
+function makeCard(t) {
+  const div = document.createElement('div');
+  div.className = 'task-card' + (t.done ? ' done' : '');
+  div.dataset.id = t.id;
+  div.innerHTML = `
+    <div class="check-circle" onclick="toggleTask(${t.id})"><span class="checkmark">✓</span></div>
+    <div class="task-body">
+      <div class="task-text">${t.text}</div>
+      <span class="cat-badge badge-${t.cat}">${catLabel(t.cat)}</span>
+    </div>
+    <button class="del-btn" onclick="deleteTask(${t.id})">✕</button>
+    <div class="confetti-burst"></div>
+  `;
+  return div;
+}
+
+function render() {
+  const active = tasks.filter(t => !t.done);
+  const done   = tasks.filter(t =>  t.done);
+  const total  = tasks.length;
+  const pct    = total ? Math.round((done.length / total) * 100) : 0;
+
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('pct-lbl').textContent  = pct + '%';
+  document.getElementById('done-toggle-btn').textContent = (showDone ? '▾' : '▸') + ` show done (${done.length})`;
+
+  const at = document.getElementById('active-tasks');
+  at.innerHTML = '';
+  if (active.length === 0) {
+    at.innerHTML = `<div class="empty"><div class="big">🌸</div><p>all bloomed! add something new ✨</p></div>`;
+  } else {
+    active.forEach(t => at.appendChild(makeCard(t)));
+  }
+
+  const dt = document.getElementById('done-tasks');
+  dt.innerHTML = '';
+  done.forEach(t => dt.appendChild(makeCard(t)));
+}
+
+// ── INIT ────────────────────────────────────────────────────────────────────
+updateStreak();
+fetchTasks();
+// auto-refresh every 30s to pick up changes from other devices
+setInterval(fetchTasks, 30000);
+</script>
+</body>
+</html>
