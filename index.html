@@ -131,6 +131,49 @@ html, body { font-family: 'Quicksand', sans-serif; background: var(--bg); color:
 .loading-flower { font-size: 40px; animation: spin-bloom 1.2s infinite; }
 @keyframes spin-bloom { 0%,100%{transform:scale(1) rotate(0deg)} 50%{transform:scale(1.15) rotate(180deg)} }
 .loading-text { font-size: 13px; font-weight: 700; color: var(--muted); }
+
+/* PRIORITY ROW */
+.priority-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.pri-btn { white-space: nowrap; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 5px 11px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.18s; font-family: 'Quicksand', sans-serif; }
+.pri-btn.sel-high { background: #FFE4E4; border-color: #E87D7D; color: #8B2020; }
+.pri-btn.sel-med  { background: var(--peach); border-color: var(--peach-dark); color: #7A4210; }
+.pri-btn.sel-low  { background: var(--mint); border-color: var(--mint-dark); color: #1A6A4A; }
+.pri-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 7px; margin-left: 4px; }
+.badge-high { background: #FFE4E4; color: #8B2020; }
+.badge-med  { background: var(--peach); color: #7A4210; }
+.badge-low  { background: var(--mint); color: #1A6A4A; }
+
+/* DUE TIME */
+.due-row { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
+.due-label { font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.due-input { flex: 1; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 7px 11px; font-family: 'Quicksand', sans-serif; font-size: 12px; font-weight: 600; color: var(--text); outline: none; transition: border-color 0.2s; }
+.due-input:focus { border-color: var(--sky-dark); }
+.due-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 7px; background: var(--sky); color: #1A5A82; margin-left: 4px; }
+.due-badge.overdue { background: #FFE4E4; color: #8B2020; }
+.task-card.overdue { border-color: #E87D7D; background: #FFF8F8; }
+
+/* POMODORO TIMER */
+.timer-wrap { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 11px 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.timer-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+.timer-title { font-size: 12px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.timer-toggle-btn { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; font-family: 'Quicksand', sans-serif; font-weight: 700; }
+.timer-body { margin-top: 10px; }
+.timer-progress { height: 5px; background: #F0EAF0; border-radius: 5px; margin-bottom: 10px; overflow: hidden; }
+.timer-progress-bar { height: 100%; background: linear-gradient(90deg, var(--pink-dark), var(--lavender-dark)); border-radius: 5px; transition: width 1s linear; width: 0%; }
+.timer-display { text-align: center; font-family: 'Nunito', sans-serif; font-size: 38px; font-weight: 900; letter-spacing: 3px; margin-bottom: 4px; }
+.timer-display.work { color: var(--pink-dark); }
+.timer-display.break { color: var(--mint-dark); }
+.timer-mode-label { text-align: center; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 10px; }
+.timer-controls { display: flex; gap: 7px; justify-content: center; }
+.timer-btn { padding: 7px 18px; border-radius: 10px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Quicksand', sans-serif; transition: transform 0.15s; }
+.timer-btn:active { transform: scale(0.94); }
+.timer-start { background: var(--pink-dark); color: white; }
+.timer-reset { background: var(--lavender); color: var(--lavender-dark); }
+.timer-skip  { background: var(--mint); color: var(--mint-dark); }
+
+/* NOTIFICATION BANNER */
+.notif-banner { background: var(--sky); border: 1.5px solid var(--sky-dark); border-radius: 12px; padding: 9px 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 700; color: #1A5A82; }
+.notif-allow-btn { background: var(--sky-dark); color: white; border: none; border-radius: 8px; padding: 5px 11px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Quicksand', sans-serif; margin-left: auto; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -144,6 +187,11 @@ html, body { font-family: 'Quicksand', sans-serif; background: var(--bg); color:
   <div class="header">
     <h1>bloom <span>✿</span></h1>
     <div class="streak-pill">🔥 <span id="streak-num">0</span> day streak</div>
+  </div>
+
+  <div id="notif-banner" class="notif-banner" style="display:none">
+    🔔 enable reminders to get notified when tasks are due!
+    <button class="notif-allow-btn" onclick="requestNotifs()">enable 🔔</button>
   </div>
 
   <div class="sync-bar">
@@ -162,6 +210,24 @@ html, body { font-family: 'Quicksand', sans-serif; background: var(--bg); color:
     <button class="nudge-btn" onclick="nextNudge()">next tip ✨</button>
   </div>
 
+  <!-- POMODORO TIMER -->
+  <div class="timer-wrap">
+    <div class="timer-header" onclick="toggleTimer()">
+      <span class="timer-title">🍅 focus timer</span>
+      <button class="timer-toggle-btn" id="timer-toggle-btn">show ▼</button>
+    </div>
+    <div class="timer-body" id="timer-body" style="display:none">
+      <div class="timer-progress"><div class="timer-progress-bar" id="timer-progress-bar"></div></div>
+      <div class="timer-display work" id="timer-display">25:00</div>
+      <div class="timer-mode-label" id="timer-mode-label">🎯 focus session</div>
+      <div class="timer-controls">
+        <button class="timer-btn timer-start" id="timer-start-btn" onclick="startStopTimer()">▶ start</button>
+        <button class="timer-btn timer-skip" onclick="skipTimer()">⏭ skip</button>
+        <button class="timer-btn timer-reset" onclick="resetTimer()">↺ reset</button>
+      </div>
+    </div>
+  </div>
+
   <div class="mood-row">
     <button class="mood-pill active" onclick="setMood(this)">🌸 chill</button>
     <button class="mood-pill" onclick="setMood(this)">⚡ focused</button>
@@ -176,6 +242,18 @@ html, body { font-family: 'Quicksand', sans-serif; background: var(--bg); color:
     <button class="tag" data-cat="post"     onclick="selectCat(this)">📸 post</button>
     <button class="tag" data-cat="errand"   onclick="selectCat(this)">🛍 errand</button>
     <button class="tag" data-cat="reminder" onclick="selectCat(this)">🔔 reminder</button>
+  </div>
+
+  <div class="priority-row">
+    <span style="font-size:11px;font-weight:700;color:var(--muted);align-self:center">priority:</span>
+    <button class="pri-btn" data-priority="high" onclick="selectPriority(this)">🔴 high</button>
+    <button class="pri-btn" data-priority="med"  onclick="selectPriority(this)">🟡 med</button>
+    <button class="pri-btn" data-priority="low"  onclick="selectPriority(this)">🟢 low</button>
+  </div>
+
+  <div class="due-row">
+    <span class="due-label">⏰ remind at:</span>
+    <input type="datetime-local" class="due-input" id="due-time-input" />
   </div>
 
   <div class="add-row">
@@ -198,11 +276,20 @@ const API = 'https://script.google.com/macros/s/AKfycbwms_1WxAIKmJ17vohlZNbq4bV7
 let tasks = [];
 let nextId = Date.now();
 let selectedCat = null;
+let selectedPriority = null;
 let showDone = false;
 let recognition = null;
 let isListening = false;
 let streak = parseInt(localStorage.getItem('bloom_streak') || '0');
 let lastDate = localStorage.getItem('bloom_last_date') || '';
+
+// Pomodoro state
+let pomodoroRunning = false;
+let pomodoroMode = 'work';
+let pomodoroSeconds = 25 * 60;
+let pomodoroTotal = 25 * 60;
+let pomodoroInterval = null;
+let timerOpen = false;
 
 const nudges = [
   { icon: '🌸', text: 'Pick the smallest task and just start.' },
@@ -212,6 +299,15 @@ const nudges = [
   { icon: '✨', text: 'Done 3? You deserve a little treat.' },
   { icon: '🎯', text: 'Focus on just ONE thing right now.' },
   { icon: '🌿', text: 'Breathe. Then just pick something small.' },
+  { icon: '🔥', text: 'Start ugly — perfect is the enemy of done.' },
+  { icon: '⏱️', text: 'Set a 2-min timer. Just start. Really.' },
+  { icon: '🧠', text: 'Future you will thank present you.' },
+  { icon: '💪', text: 'Discomfort is temporary. Regret is longer.' },
+  { icon: '🌊', text: 'Ride the urge — open it, write the first word.' },
+  { icon: '🎪', text: 'Make it a game — beat the clock!' },
+  { icon: '🤝', text: 'You\'ve done hard things before. This is fine.' },
+  { icon: '🐢', text: 'Slow is fine. Not starting is the only failure.' },
+  { icon: '📵', text: 'Phone face-down for 25 mins. You can do it.' },
 ];
 let nudgeIdx = 0;
 
@@ -295,11 +391,19 @@ async function addTask(text) {
   const input = document.getElementById('task-input');
   const t = (text || input.value).trim();
   if (!t) { input.focus(); return; }
-  const task = { id: nextId++, text: t, cat: selectedCat || 'other', done: false, ts: Date.now() };
+  const dueVal = document.getElementById('due-time-input').value;
+  const task = { id: nextId++, text: t, cat: selectedCat || 'other', done: false, ts: Date.now(),
+    priority: selectedPriority || null,
+    dueTime: dueVal || null,
+    notified: false
+  };
   tasks.unshift(task);
   input.value = '';
   selectedCat = null;
+  selectedPriority = null;
   document.querySelectorAll('.tag').forEach(el => el.className = 'tag');
+  document.querySelectorAll('.pri-btn').forEach(el => el.className = 'pri-btn');
+  document.getElementById('due-time-input').value = '';
   render();
   input.focus();
   await saveTask(task);
@@ -331,6 +435,13 @@ function selectCat(el) {
   document.querySelectorAll('.tag').forEach(e => e.className = 'tag');
   selectedCat = cat;
   el.className = `tag sel-${cat}`;
+}
+function selectPriority(el) {
+  const p = el.dataset.priority;
+  if (selectedPriority === p) { selectedPriority = null; el.className = 'pri-btn'; return; }
+  document.querySelectorAll('.pri-btn').forEach(e => e.className = 'pri-btn');
+  selectedPriority = p;
+  el.className = `pri-btn sel-${p}`;
 }
 function setMood(el) {
   document.querySelectorAll('.mood-pill').forEach(p => p.classList.remove('active'));
@@ -408,15 +519,28 @@ function catLabel(cat) {
   return { email:'📧 email', reply:'💬 reply', post:'📸 post', errand:'🛍 errand', reminder:'🔔 reminder', other:'• other' }[cat] || cat;
 }
 
+function formatDueTime(dt) {
+  const d = new Date(dt);
+  const now = new Date();
+  const time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  if (d.toDateString() === now.toDateString()) return time;
+  return d.toLocaleDateString([], {month:'short', day:'numeric'}) + ' ' + time;
+}
+
 function makeCard(t) {
+  const now = Date.now();
+  const isOverdue = t.dueTime && !t.done && new Date(t.dueTime).getTime() < now;
   const div = document.createElement('div');
-  div.className = 'task-card' + (t.done ? ' done' : '');
+  div.className = 'task-card' + (t.done ? ' done' : '') + (isOverdue ? ' overdue' : '');
   div.dataset.id = t.id;
+  const priLabels = { high: '🔴 high', med: '🟡 med', low: '🟢 low' };
+  const priBadge = t.priority ? `<span class="pri-badge badge-${t.priority}">${priLabels[t.priority]}</span>` : '';
+  const dueBadge = t.dueTime ? `<span class="due-badge ${isOverdue ? 'overdue' : ''}">⏰ ${isOverdue ? 'overdue! ' : ''}${formatDueTime(t.dueTime)}</span>` : '';
   div.innerHTML = `
     <div class="check-circle" onclick="toggleTask(${t.id})"><span class="checkmark">✓</span></div>
     <div class="task-body">
       <div class="task-text">${t.text}</div>
-      <span class="cat-badge badge-${t.cat}">${catLabel(t.cat)}</span>
+      <span class="cat-badge badge-${t.cat}">${catLabel(t.cat)}</span>${priBadge}${dueBadge}
     </div>
     <button class="del-btn" onclick="deleteTask(${t.id})">✕</button>
     <div class="confetti-burst"></div>
@@ -447,11 +571,117 @@ function render() {
   done.forEach(t => dt.appendChild(makeCard(t)));
 }
 
+// ── NOTIFICATIONS ──────────────────────────────────────────────────────────
+async function requestNotifs() {
+  if (!('Notification' in window)) return;
+  await Notification.requestPermission();
+  updateNotifBanner();
+}
+function updateNotifBanner() {
+  const banner = document.getElementById('notif-banner');
+  if (!banner) return;
+  const supported = 'Notification' in window;
+  banner.style.display = (supported && Notification.permission !== 'granted') ? 'flex' : 'none';
+}
+function checkReminders() {
+  const now = Date.now();
+  let needsRender = false;
+  tasks.forEach(t => {
+    if (t.done || !t.dueTime || t.notified) return;
+    if (now >= new Date(t.dueTime).getTime()) {
+      t.notified = true;
+      needsRender = true;
+      if (Notification.permission === 'granted') {
+        new Notification('bloom ✿ reminder!', {
+          body: t.text,
+          tag: 'bloom-' + t.id
+        });
+      }
+    }
+  });
+  if (needsRender) render();
+}
+
+// ── POMODORO ───────────────────────────────────────────────────────────────
+function toggleTimer() {
+  timerOpen = !timerOpen;
+  document.getElementById('timer-body').style.display = timerOpen ? 'block' : 'none';
+  document.getElementById('timer-toggle-btn').textContent = timerOpen ? 'hide ▲' : 'show ▼';
+}
+function startStopTimer() {
+  if (pomodoroRunning) {
+    clearInterval(pomodoroInterval);
+    pomodoroRunning = false;
+    document.getElementById('timer-start-btn').textContent = '▶ resume';
+  } else {
+    pomodoroRunning = true;
+    document.getElementById('timer-start-btn').textContent = '⏸ pause';
+    pomodoroInterval = setInterval(() => {
+      pomodoroSeconds--;
+      if (pomodoroSeconds <= 0) {
+        clearInterval(pomodoroInterval);
+        pomodoroRunning = false;
+        if (pomodoroMode === 'work') {
+          pomodoroMode = 'break';
+          pomodoroSeconds = 5 * 60;
+          pomodoroTotal = 5 * 60;
+          if (Notification.permission === 'granted')
+            new Notification('bloom ✿ break time! ☕', { body: '25 mins done — you earned a 5 min break 🌸' });
+        } else {
+          pomodoroMode = 'work';
+          pomodoroSeconds = 25 * 60;
+          pomodoroTotal = 25 * 60;
+          if (Notification.permission === 'granted')
+            new Notification('bloom ✿ back to it! ⚡', { body: 'Break over — let\'s focus for 25 mins!' });
+        }
+        document.getElementById('timer-start-btn').textContent = '▶ start';
+        updateTimerUI();
+        return;
+      }
+      updateTimerUI();
+    }, 1000);
+  }
+}
+function resetTimer() {
+  clearInterval(pomodoroInterval);
+  pomodoroRunning = false;
+  pomodoroMode = 'work';
+  pomodoroSeconds = 25 * 60;
+  pomodoroTotal = 25 * 60;
+  document.getElementById('timer-start-btn').textContent = '▶ start';
+  updateTimerUI();
+}
+function skipTimer() {
+  clearInterval(pomodoroInterval);
+  pomodoroRunning = false;
+  pomodoroMode = pomodoroMode === 'work' ? 'break' : 'work';
+  pomodoroSeconds = pomodoroMode === 'work' ? 25 * 60 : 5 * 60;
+  pomodoroTotal  = pomodoroSeconds;
+  document.getElementById('timer-start-btn').textContent = '▶ start';
+  updateTimerUI();
+}
+function updateTimerUI() {
+  const m = Math.floor(pomodoroSeconds / 60);
+  const s = pomodoroSeconds % 60;
+  const display = document.getElementById('timer-display');
+  if (!display) return;
+  display.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  display.className = 'timer-display ' + pomodoroMode;
+  document.getElementById('timer-mode-label').textContent =
+    pomodoroMode === 'work' ? '🎯 focus session' : '☕ break time';
+  const pct = ((pomodoroTotal - pomodoroSeconds) / pomodoroTotal) * 100;
+  document.getElementById('timer-progress-bar').style.width = pct + '%';
+}
+
 // ── INIT ────────────────────────────────────────────────────────────────────
 updateStreak();
 fetchTasks();
 // auto-refresh every 30s to pick up changes from other devices
 setInterval(fetchTasks, 30000);
+// check reminders every minute
+setInterval(checkReminders, 60000);
+// show notification banner if needed
+updateNotifBanner();
 </script>
 </body>
 </html>
